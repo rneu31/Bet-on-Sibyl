@@ -5,7 +5,7 @@
 .env
 
 # Distribution / packaging
-.Python 
+.Python
 env/
 build/
 dist/
@@ -14,3 +14,5 @@ eggs/
 lib/
 lib64/
 var/
+
+.pyc
