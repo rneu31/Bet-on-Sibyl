@@ -90,9 +90,9 @@ Instead of using each team’s attribute independently in the analysis, attribut
 ### Algorithm Tuning and Running
 
 This step is located in the "RunModelLeague.py"
-According to each sport, it uses scikit-learn and historical game results (in the .npz file) to make predictions on the current season games
- that have not been played.
- A logistic regression predictive model with the L1 penalty is created. Analysis of results are output to csv files.
+According to each sport, it uses scikit-learn and historical game results (in the .npz file) to make predictions
+on the current season games that have not been played. A logistic regression predictive model with the 
+[L1 penalty](http://www.statisticshowto.com/regularization/) is created. Analysis of results are output to csv files.
 
  Here is below an example of the output for the 2017 nba season
  
