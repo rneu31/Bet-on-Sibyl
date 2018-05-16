@@ -1,7 +1,3 @@
-# coding: utf-8
-
-# In[7]:
-
 from urllib import urlopen
 
 import pandas as pd
@@ -10,10 +6,7 @@ from bs4 import BeautifulSoup
 
 class AcquireGameStats(object):
     # Creates a csv file containing all the matchup results between
-    # NBA teams for all seasons between inputs 'year1' and 'year2'.
-    # Nb: Below - Uncomment if you want to filter the dataframe excluding matchups in a span of time
-    # When you finished to make your modif'
-    # do not forget to convert your file in '.py' to make it usesable as class in other programs
+    # teams for all seasons between inputs 'year1' and 'year2'.
 
     def __init__(self, year0, year1, year2, csv_filename, csv_datetime_filename):
         self.year0 = year0
@@ -74,7 +67,7 @@ class AcquireGameStats(object):
 
         # Removing games played away to avoid duplicate in the big data frame
         game_df = game_df[game_df.iloc[:, 5] != '@']
-        # Dropping several columns we do not need 
+        # Dropping several columns we do not need
         game_df.drop(game_df.columns[[0, 1, 3, 5, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]], axis=1, inplace=True)
         # Remove row with missing values at the 'Visitor_Team' column
         game_df = game_df[game_df.Tm.notnull()]
@@ -102,7 +95,7 @@ class AcquireGameStats(object):
             game_df['H_PTS'] = game_df['H_PTS'].astype(int)
             game_df['V_PTS'] = game_df['V_PTS'].astype(int)
 
-        # Simulate some True Result for unplayed game in the current season 
+        # Simulate some True Result for unplayed game in the current season
         # Avoiding error when making the input_tableau file
         except (ValueError, KeyError) as e:
             game_df['V_PTS'] = game_df['V_PTS'].replace([''], 0)

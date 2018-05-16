@@ -1,7 +1,3 @@
-# coding: utf-8
-
-# In[1]:
-
 from urllib import urlopen
 
 import pandas as pd
@@ -10,7 +6,7 @@ from bs4 import BeautifulSoup
 
 class AcquireTeamStats(object):
     # Creates a csv file containing cummulative data by season for each
-    # NBA team that played games between input 'year1' and 'year2'.
+    # team that played games between input 'year1' and 'year2'.
     # When you finished to make your modif' do not forget to convert
     # your file in '.py' to make it usesable as class in other programs
 
@@ -27,12 +23,14 @@ class AcquireTeamStats(object):
         self.get_batting_team_stats(self.year1, self.year2, self.batting_column_headers)
         self.clean_batting_data(self.batting_season_df)
         print "=> Scraping Batting Stats...OK"
+
         # --------------------------Pitching Stats---------------------------------
         print "=> Scraping Pitching Stats..."
         self.get_pitching_column_headers(self.year0)
         self.get_pitching_team_stats(self.year1, self.year2, self.pitching_column_headers)
         self.clean_pitching_data(self.pitching_season_df)
         print " Scraping Pitching Stats...OK"
+
         # ------------------------Merge Data Frames & Write to csv----------------
         self.write_to_csv(self.csv_filename, self.batting_season_df, self.pitching_season_df)
 
@@ -48,6 +46,7 @@ class AcquireTeamStats(object):
         # Getting the column headers
         # extracting the text and construct a list of the column headers using list comprehension
         self.batting_column_headers = [th.getText() for th in right_table.find_all('tr', limit=1)[0].find_all('th')]
+        print("Batting headers: {}".format(self.batting_column_headers))
 
     # Get the team stats
     def get_batting_team_stats(self, year1, year2, batting_column_headers):
@@ -66,12 +65,23 @@ class AcquireTeamStats(object):
             # Indexing the right table
             right_table = soup.find('table', id="teams_standard_batting")
 
-            # Get the player data
-            data_rows = right_table.find_all('tr')[1:]
-            player_data = [[td.getText() for td in data_rows[i].find_all('td')] for i in range(len(data_rows))]
+            # Get the team batting data
+            teams_batting_data = []
+            data_rows = right_table.find_all('tr')[1:]  # TODO is this skipping one
+            for row in data_rows:
+                # Get team name
+                team_name = row.find('th').getText()
+                team_batting_data = [team_name]
+
+                # Get stats
+                for td in row.find_all('td'):
+                    team_batting_data.append(td.getText())
+
+                teams_batting_data.append(team_batting_data)
 
             # Turn yearly data into a data frame
-            year_df = pd.DataFrame(player_data, columns=batting_column_headers)
+            year_df = pd.DataFrame(teams_batting_data, columns=batting_column_headers)
+
             # Insert and deleting some columns
             year_df.insert(1, 'Season_Yr', year)
 
@@ -111,12 +121,23 @@ class AcquireTeamStats(object):
             # Indexing the right table
             right_table = soup.find('table', id="teams_standard_pitching")
 
-            # Get the player data
-            data_rows = right_table.find_all('tr')[1:]
-            player_data = [[td.getText() for td in data_rows[i].find_all('td')] for i in range(len(data_rows))]
+            # Get the team pitching data
+            teams_pitching_data = []
+            data_rows = right_table.find_all('tr')[1:]  # TODO is this skipping one?
+            for row in data_rows:
+                # Get team name
+                team_name = row.find('th').getText()
+                team_pitching_data = [team_name]
+
+                # Get stats
+                for td in row.find_all('td'):
+                    team_pitching_data.append(td.getText())
+
+                teams_pitching_data.append(team_pitching_data)
 
             # Turn yearly data into a data frame
             year_df = pd.DataFrame(player_data, columns=pitching_column_headers)
+
             # Insert and deleting some columns
             year_df.insert(1, 'Season_Yr', year)
 
@@ -142,7 +163,7 @@ class AcquireTeamStats(object):
         # get the column names and replace all '#' with 'Nb'
         batting_season_df.columns = batting_season_df.columns.str.replace('#', 'Nb_')
 
-        # get the column names and replace all '+' with 'Nb'
+        # get the column names and replace all '+' with '_Plus'
         batting_season_df.columns = batting_season_df.columns.str.replace('+', '_Plus')
 
         # and replace all '/' with '_per_'

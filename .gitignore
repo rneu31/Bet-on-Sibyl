@@ -15,4 +15,8 @@ lib/
 lib64/
 var/
 
+.tox/
+.pytest_cache/
+*.egg-info/
 .pyc
+*.pyc

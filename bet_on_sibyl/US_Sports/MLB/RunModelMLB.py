@@ -1,10 +1,7 @@
-# coding: utf-8
-
-# In[1]:
-
 import csv
 import sqlite3 as lite
 import sys
+import os
 
 from matplotlib import pyplot as plt
 from pandas import *
@@ -15,6 +12,10 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.utils import shuffle
 
+
+from ScrapeMLBTeamStats import AcquireTeamStats
+from ScrapeMLBGameStats import AcquireGameStats
+from PrepareForMLTechMLB import PrepareForML
 
 # get_ipython().magic(u'matplotlib inline')
 
@@ -68,14 +69,13 @@ def add_id_column_to_csv(tableau_input_filename):
 
 
 class MLBMakePredictions(object):
-    # Applies ml techniques to the mlb scraped data and uses the 
-    # resulting model to make predictions on unplayed games 
-    # (NB: unplayed game = mlb_db_name = mlb_team_data_x.db, for ex. the database of the CURRENT SEASON, 
+    # Applies ml techniques to the mlb scraped data and uses the
+    # resulting model to make predictions on unplayed games
+    # (NB: unplayed game = mlb_db_name = mlb_team_data_x.db,
+    # for ex. the database of the CURRENT SEASON,
     # the season you want to make prediction)
 
-    from ScrapeMLBTeamStats import AcquireTeamStats
-    from ScrapeMLBGameStats import AcquireGameStats
-    from PrepareForMLTechMLB import PrepareForML
+
 
     def __init__(self, current_season, feature_file, mlb_db_name):
         self.data = np.load(feature_file)
@@ -101,7 +101,7 @@ class MLBMakePredictions(object):
 
     # -----------------------ACQUIRE CURRENT SEASON DATA---------------------------
     def acquire_current_season_data(self, current_season):
-        # Acquires all data structures needed to make predictions on current season 
+        # Acquires all data structures needed to make predictions on current season
 
         team_data_filename = 'mlb_team_stats_' + str(current_season) + '.csv'
         game_data_filename = 'mlb_game_stats_' + str(current_season) + '.csv'
@@ -113,7 +113,12 @@ class MLBMakePredictions(object):
 
         # Scrape data for the current season
         print "Scraping Team Stats..."
-        mlb_teamdata = self.AcquireTeamStats(current_season, current_season, current_season, team_data_filename)
+        mlb_teamdata = AcquireTeamStats(
+            current_season,
+            current_season,
+            current_season,
+            team_data_filename
+        )
         mlb_teamdata()
         print "OK\n"
 
@@ -211,8 +216,8 @@ class MLBMakePredictions(object):
 
     # Radial Basis Function kernel SVM
     def train_rbf_svm(self, scale_data=True):
-        # IF YOU PASS 'scale_data' to True DO NOT FORGET TO DO THE SAME IN 'make_predictions' 
-        # to also normalize test data (current_season features)        
+        # IF YOU PASS 'scale_data' to True DO NOT FORGET TO DO THE SAME IN 'make_predictions'
+        # to also normalize test data (current_season features)
         # Preprocessing step: True by default(only for SVM as it is always recommended)
         # Scaling the feature vector applying normalization 'Min-Max scaling' technique
         # If you want to use standardization use 'standardize_features' function
@@ -267,8 +272,8 @@ class MLBMakePredictions(object):
             else:
                 pass
 
-            # Make prediction 
-            # TO CHANGE ACCORDING THE ALGORITHM YOU WANT TO USE, 
+            # Make prediction
+            # TO CHANGE ACCORDING THE ALGORITHM YOU WANT TO USE,
             # available classifiers: logreg, clf, dbt (change 2X)
             prediction_output = self.logreg.predict(feature)  # Predict class labels for samples in X
             prediction_probability = max(
@@ -359,5 +364,11 @@ class MLBMakePredictions(object):
 
 
 if __name__ == '__main__':
-    x = MLBMakePredictions(2016, "mlb_1980_2014_features.npz", "mlb_team_data_2016.db")
+    npz_file = os.path.join(os.path.dirname(__file__), 'mlb_1980_2014_features.npz')
+
+    x = MLBMakePredictions(
+        2016,
+        npz_file,
+        "mlb_team_data_2016.db"
+    )
     x()
