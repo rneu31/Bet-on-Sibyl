@@ -20,3 +20,10 @@ var/
 *.egg-info/
 .pyc
 *.pyc
+
+# TODO - need to remove all existing csvs as well
+*.csv
+*.txt
+*.db
+*.log
+

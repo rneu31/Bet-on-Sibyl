@@ -3,7 +3,8 @@ set -e
 
 tox
 #source .tox/py36/Scripts/activate
-source .tox/py27/Scripts/activate
+source .tox/py27/bin/activate  # Mac
+#source .tox/py27/Scripts/activate # Windows
 
 # Attempt to turn off Python print buffering.
 # gitbash on Windows seems like it hangs for a while

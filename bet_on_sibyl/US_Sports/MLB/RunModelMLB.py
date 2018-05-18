@@ -3,7 +3,13 @@ import sqlite3 as lite
 import sys
 import os
 
-from matplotlib import pyplot as plt
+# RuntimeError: Python is not installed as a framework. The Mac OS X backend will not
+# be able to function correctly if Python is not installed as a framework. See
+# the Python documentation for more information on installing Python as a framework on
+# Mac OS X. Please either reinstall Python as a framework, or try one of the other backends.
+# If you are using (Ana)Conda please install python.app and replace the use of 'python' with
+# 'pythonw'. See 'Working with Matplotlib on OSX' in the Matplotlib FAQ for more information.
+# from matplotlib import pyplot as plt
 from pandas import *
 from sklearn.model_selection import train_test_split, cross_val_predict, cross_val_score
 from sklearn import linear_model, metrics, svm
@@ -113,24 +119,28 @@ class MLBMakePredictions(object):
 
         # Scrape data for the current season
         print "Scraping Team Stats..."
-        mlb_teamdata = AcquireTeamStats(
-            current_season,
-            current_season,
-            current_season,
-            team_data_filename
-        )
-        mlb_teamdata()
+        # mlb_teamdata = AcquireTeamStats(
+        #     year_start=current_season,
+        #     year_end=current_season,
+        #     csv_filename=team_data_filename
+        # )
+        # mlb_teamdata()
         print "OK\n"
 
         print "Scraping Game Stats..."
-        mlb_gamedata = self.AcquireGameStats(current_season, current_season, current_season, game_data_filename,
-                                             datetime_filename)
-        mlb_gamedata()
+        # mlb_gamedata = AcquireGameStats(
+        #     current_season,
+        #     current_season,
+        #     current_season,
+        #     game_data_filename,
+        #     datetime_filename
+        # )
+        # mlb_gamedata()
         print "OK\n"
 
-        print "Preprocessing updated data for Machine Learning..."
         # Prepare for ML predictions
-        pml = self.PrepareForML(game_data_filename, db_filename)
+        print "Preprocessing updated data for Machine Learning..."
+        pml = PrepareForML(game_data_filename, db_filename)
         pml.process_raw_data(team_data_filename)
         pml(feature_filename)
         print "OK\n"
@@ -162,6 +172,7 @@ class MLBMakePredictions(object):
                     for i in range(len(days)):
                         tableau_content = scores[i][1::]
                         tableau_date = days[i]
+
                         # Append True_Result
                         try:
                             if int(tableau_content[3]) > int(tableau_content[1]):
@@ -170,6 +181,7 @@ class MLBMakePredictions(object):
                                 tableau_content.append(0)
                         except:
                             pass
+
                         # Append 'Predicted_Result' and 'Confidence'
                         prediction_results = self.make_predictions(tableau_content[0], tableau_content[2])
                         tableau_content += list(prediction_results)
@@ -177,7 +189,6 @@ class MLBMakePredictions(object):
 
                         tableau_write.writerow(tableau_content)
                         # -----------------------------------------------------------------------------------------------------------------------------------------
-
                         # -----------------------------ADD INDEX COLUMN TO CSV FOR TABLEAU ANALYSIS-----
 
                         # To run after the 'make_tableau_file' function so as to add 'ID' column to the
@@ -212,7 +223,6 @@ class MLBMakePredictions(object):
         # Only instantiate logistic regression model without fitting any data
         # Needed in the 'model_evaluation' function
         self.logreg2 = linear_model.LogisticRegression()
-        pass
 
     # Radial Basis Function kernel SVM
     def train_rbf_svm(self, scale_data=True):
@@ -235,8 +245,6 @@ class MLBMakePredictions(object):
     def instantiate_rbf_svm(self):
         self.clf2 = svm.SVC(probability=True, random_state=None)
 
-        pass
-
     def train_adaboost(self):
         X, y = shuffle(self.X, self.y)
         self.dbt = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=100)
@@ -244,7 +252,6 @@ class MLBMakePredictions(object):
 
     def instantiate_adaboost(self):
         self.dbt2 = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=100)
-        pass
 
     # --------------------------------------------------------------------------------------------------------------------------------------
 
@@ -255,7 +262,7 @@ class MLBMakePredictions(object):
         # Advise: Respect the order:
         # V_Team for team1, H_Team for team2 for consistency with the PrepareForML class techniques
 
-        query = 'SELECT * FROM Team_Stats WHERE Team = ?'
+        query = 'SELECT * FROM Team_Stats WHERE Tm = ?'
 
         con = lite.connect(self.mlb_db_name)
         with con:
@@ -268,16 +275,17 @@ class MLBMakePredictions(object):
 
             if scale_data != False:
                 feature = normalize_features(feature)
-
             else:
                 pass
 
             # Make prediction
             # TO CHANGE ACCORDING THE ALGORITHM YOU WANT TO USE,
             # available classifiers: logreg, clf, dbt (change 2X)
+            print('Feature:\n{}'.format(feature))
             prediction_output = self.logreg.predict(feature)  # Predict class labels for samples in X
             prediction_probability = max(
-                self.logreg.predict_proba(feature)[0])  # Returns the probability of "prediction_output"
+                self.logreg.predict_proba(feature)[0]
+            )  # Returns the probability of "prediction_output"
 
             return prediction_output[0], prediction_probability
 
